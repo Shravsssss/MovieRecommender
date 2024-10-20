@@ -81,17 +81,29 @@ def landing_page():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('landing_page'))
+    error = None
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
 
+        # Check if the username already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            error = 'Username is already taken. Please choose a different one.'
+            return render_template('register.html', error=error)
+        
+        # If username is not taken, proceed with registration
         user = User(username=username)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
 
+        # Automatically log in the user after registration
+        login_user(user)
+
+        # Redirect to the landing page after successful login
         return redirect(url_for('landing_page'))
-    return render_template('register.html')
+    return render_template('register.html', error=error)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
