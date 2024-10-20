@@ -72,7 +72,10 @@ def get_movie_info(title):
 
 @app.route("/")
 def landing_page():
-    return render_template("landing_page.html")
+    if current_user.is_authenticated:
+        return render_template("landing_page.html")
+    else:
+        return redirect(url_for('register'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
