@@ -72,9 +72,9 @@ def get_movie_info(title):
         if(res['Response'] == "True"):
             return res
         else:  
-            return { 'Title': title, 'Platforms': platforms, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+            return { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
     else:
-        return  { 'Title': title, 'Platforms': platforms, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+        return  { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
 
 @app.route("/")
 def landing_page():
@@ -174,6 +174,8 @@ def predict():
         movie_info = get_movie_info(movie)
         # print(movie_info['imdbRating'])
         if movie_info:
+            # Comments
+            movie_with_rating[movie+"-c"]=movie_info['Reviews']
             movie_with_rating[movie+"-s"]=movie_info['Platforms']
             movie_with_rating[movie+"-r"]=movie_info['imdbRating']
             movie_with_rating[movie+"-g"]=movie_info['Genre']
