@@ -10,6 +10,7 @@ import time
 import requests
 from datetime import datetime
 from streaming import search_movie_on_justwatch
+from reviews import get_movie_reviews, search_movie_tmdb
 
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
@@ -55,6 +56,7 @@ class Recommendation(db.Model):
 
 # Replace 'YOUR_API_KEY' with your actual OMDB API key
 OMDB_API_KEY = 'b726fa05'
+api_key_TMDB = "9f385440fe752884a4f5b8ea5b6839dd"
 
 def get_movie_info(title):
     index=len(title)-6
@@ -63,13 +65,16 @@ def get_movie_info(title):
     response = requests.get(url)
     if response.status_code == 200:
         platforms = search_movie_on_justwatch(title)
+        movie_id = search_movie_tmdb(title, api_key_TMDB)
+        reviews = get_movie_reviews(movie_id, api_key_TMDB)
+
         res=response.json()
         if(res['Response'] == "True"):
             return res
         else:  
-            return { 'Title': title, 'Platforms': platforms, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+            return { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
     else:
-        return  { 'Title': title, 'Platforms': platforms, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+        return  { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
 
 @app.route("/")
 def landing_page():
@@ -169,6 +174,8 @@ def predict():
         movie_info = get_movie_info(movie)
         # print(movie_info['imdbRating'])
         if movie_info:
+            # Comments
+            movie_with_rating[movie+"-c"]=movie_info['Reviews']
             movie_with_rating[movie+"-s"]=movie_info['Platforms']
             movie_with_rating[movie+"-r"]=movie_info['imdbRating']
             movie_with_rating[movie+"-g"]=movie_info['Genre']
