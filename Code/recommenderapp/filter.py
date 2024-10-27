@@ -34,7 +34,10 @@ class Filter:
                 res.append(x["title"])
         return res
 
-    def resultsTop10genre(self, word):
+    def resultsTop10rate(self, word):
+        return self.resultsrate(word)[:10]
+    
+    def resultsTop10(self, word):
         return self.resultsgenre(word)[:10]
 
 
