@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <style>
+        .navbar {
+            border-radius: 0;
+            height: 60px;
+            background-color: #d9534f !important; /* Force red color */
+            border: none; /* Remove any border */
+        }
+
+        .navbar .nav > li > a, .navbar .nav > li > button {
+            color: white !important;
+            font-size: 16px;
+            padding: 15px 20px;
+            height: 100%;
+        }
+
+        .navbar .dropdown-menu {
+            background-color: #d9534f; /* Dropdown background color matching navbar */
+            color: white; /* Ensure text is white in the dropdown */
+            border: none;
+        }
+
+        .navbar .dropdown-menu > li > a {
+            color: white !important;
+            font-size: 16px;
+        }
+
+        .navbar .dropdown-menu > li.dropdown-header {
+            color: white;
+            font-size: 18px; /* Larger font size for username */
+            background-color: #d9534f; /* Ensure background matches navbar */
+            padding: 10px 20px; /* Add padding for a better look */
+        }
+
+        .navbar .dropdown-menu > li > a:hover {
+            background-color: rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .navbar .header-btn {
+            height: 60px;
+            line-height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Dropdown toggle active (clicked) state */
+        .navbar .dropdown-toggle:active, .navbar .dropdown-toggle:focus {
+            background-color: #d9534f !important; /* Red color when clicked */
+            color: white !important; /* Ensure the text color stays white */
+            border-color: transparent; /* Remove any border */
+        }
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #141414;
+            color: white;
+            background-size: cover;
+            margin-top: 80px;
+        }
+        body::after {
+            content: "";
+            background: url("https://wallpaperaccess.com/full/8212583.jpg");
+            opacity: 0.5;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            position: absolute;
+            z-index: -1;
+        }
+        .profile-section {
+            margin-top: 40px;
+        }
+        .profile-info, .account-settings, .activity-info, .notifications, .feedback {
+            background-color: #888888;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        .profile-info h3, .account-settings h3, .activity-info h3, .notifications h3, .feedback h3 {
+            color: #ebe5e6;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .btn-red{
+            background-color: #d9534f;
+            border: none;
+        }
+        .btn-red:hover{
+            background-color: lightcoral;
+        }
+        label {
+            margin-top: 10px;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="background-color: rgba(0, 0, 0, 0.5); height: 60px;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand logo" href="{{ url_for('landing_page') }}" style="font-size: 24px; color: white; font-weight: bold;">Movie Recommender</a>
+            </div>
+    
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="{{ url_for('history') }}" class="btn header-btn">View History</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('view_watchlist') }}" class="btn header-btn">Watchlist</a>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle header-btn" data-toggle="dropdown">
+                        <img src="https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png" alt="Profile"
+                            style="width: 30px; height: 30px; border-radius: 50%;">
+                        <span>{{ current_user.username }}</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">Welcome, {{ current_user.username }}</li>
+                        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h2>User Profile</h2>
+
+        <!-- Basic Information -->
+        <div class="profile-info">
+            <h3>Basic Information</h3>
+            <p><strong>Name:</strong> {{ current_user.username }}</p>
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+            <p><strong>Favorite Genres:</strong> {{ current_user.favorite_genres }}</p>
+            <button class="btn btn-red" data-toggle="modal" data-target="#editProfileModal">Edit Profile</button>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="account-settings">
+            <h3>Account Settings</h3>
+            <button class="btn btn-red" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
+        </div>
+
+        <!-- Activity Info -->
+        <div class="activity-info">
+            <h3>Activity</h3>
+            <p><strong>Movies in Watchlist:</strong> {{ watchlist_count }}</p>
+            <p><strong>Total Recommended Movies:</strong> {{ rec_movies_count }}</p>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="{{ url_for('edit_profile') }}" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="favoriteGenres">Favorite Genres:</label>
+                        <input type="text" id="favoriteGenres" name="favorite_genres" class="form-control" value="{{ current_user.favorite_genres }}">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-red" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-red">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="{{ url_for('change_password') }}" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="newPassword" style="margin-top: 10px;">New Password:</label>
+                        <input type="password" id="newPassword" name="new_password" class="form-control">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-red" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-red">Change Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>

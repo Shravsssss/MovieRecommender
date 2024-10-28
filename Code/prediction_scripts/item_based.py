@@ -61,7 +61,7 @@ def recommendForNewUser(user_rating):
     joinMoviesAndRecommendations.sort_values(
         by="recommended", ascending=False, inplace=True
     )
-    
+
     # Remove the movies that the user has already rated (training data)
     rated_movie_titles = userRatings["title"].tolist()  # Movies in training data
     joinMoviesAndRecommendations = joinMoviesAndRecommendations[~joinMoviesAndRecommendations["title"].isin(rated_movie_titles)]
