@@ -74,6 +74,7 @@
         <!-- Form to register -->
         <form id="registerForm" action="/register" method="post">
             <input type="text" name="username" placeholder="Username" required class="form-control">
+            <input type="email" name="email" placeholder="Email" required class="form-control">
             <input type="password" name="password" placeholder="Password" required class="form-control">
             <button type="submit" class="red-button">Register</button>
         </form>
@@ -91,7 +92,7 @@
                 setTimeout(function() {
                     $('#errorMessage').fadeOut(); // Hide the error card
                     $('#registerForm')[0].reset(); // Clear the form fields
-                }, 2000); // 5000 milliseconds = 5 seconds
+                }, 2000); // 2000 milliseconds = 2 seconds
             });
         {% endif %}
     </script>

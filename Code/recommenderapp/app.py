@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, flash
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,6 +8,7 @@ import sys
 import csv
 import time
 import requests
+import re
 import re
 from datetime import datetime
 from streaming import search_movie_on_justwatch
@@ -31,18 +32,22 @@ login_manager.login_view = 'login'
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200))
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+    favorite_genres = db.Column(db.String(200), nullable=True)  # Added field for favorite genres
+    watchlist_count = db.Column(db.Integer, default=0)
+    rec_movies_count = db.Column(db.Integer, default=0)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-    
+
 class Recommendation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -62,34 +67,40 @@ class Watchlist(db.Model):
 OMDB_API_KEY = 'b726fa05'
 TMDB_API_KEY = "9f385440fe752884a4f5b8ea5b6839dd"
 
-def get_movie_info(title):
-    year = title[len(title)-5:len(title)-1]
-    title = title[0:len(title)-7]  # Remove the year from the title
-    title = re.sub(r'\(.*?\)', '', title).strip()
+ 
+# Route for user profile
+@app.route('/profile')
+@login_required
+def profile():
+    watchlist_count = Watchlist.query.filter_by(user_id=current_user.id).count()
+    rec_movies_count = Recommendation.query.filter_by(user_id=current_user.id).count()
     
-    if ',' in title:
-        parts = title.split(', ')
-        if len(parts) == 2:
-            title = f"{parts[1]} {parts[0]}" 
-    title = re.sub(r'[^a-zA-Z\s]', '', title).strip()
+    return render_template('profile.html', watchlist_count=watchlist_count, rec_movies_count=rec_movies_count)
 
-    url = f"http://www.omdbapi.com/?t={title}&apikey={OMDB_API_KEY}&y={year}"
-    print(url)
+# Edit profile
+@app.route("/edit_profile", methods=["POST"])
+@login_required
+def edit_profile():
+    current_user.favorite_genres = request.form.get("favorite_genres")
+    db.session.commit()
+    flash("Profile updated successfully!", "success")
+    return redirect(url_for('profile'))
 
-    response = requests.get(url)
-    if response.status_code == 200:
-        platforms = search_movie_on_justwatch(title)
-        movie_id = search_movie_tmdb(title, TMDB_API_KEY)
-        reviews = get_movie_reviews(movie_id, TMDB_API_KEY)
-    
-        res = response.json()
-        if res['Response'] == "True":
-            res = res | {'Platforms': platforms, 'Reviews': reviews}
-            return res
-        else:  
-            return { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
-    else:
-        return  { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+# Change password
+@app.route("/change_password", methods=["POST"])
+@login_required
+def change_password():
+    current_password = request.form.get("current_password")
+    new_password = request.form.get("new_password")
+
+    if not current_user.check_password(current_password):
+        flash("Current password is incorrect.", "danger")
+        return redirect(url_for('profile'))
+
+    current_user.set_password(new_password)
+    db.session.commit()
+    flash("Password changed successfully!", "success")
+    return redirect(url_for('profile'))
 
 @app.route("/")
 def landing_page():
@@ -105,27 +116,30 @@ def register():
     error = None
     if request.method == 'POST':
         username = request.form.get('username')
+        email = request.form.get('email')
         password = request.form.get('password')
 
-        # Check if the username already exists
+        # Check if the username or email already exists
         existing_user = User.query.filter_by(username=username).first()
+        existing_email = User.query.filter_by(email=email).first()
+        
         if existing_user:
             error = 'Username is already taken. Please choose a different one.'
-            return render_template('register.html', error=error)
-        
-        # If username is not taken, proceed with registration
-        user = User(username=username)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
+        elif existing_email:
+            error = 'Email is already registered. Please choose a different one.'
+        else:
+            # If username and email are not taken, proceed with registration
+            user = User(username=username, email=email)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
 
-        # Automatically log in the user after registration
-        login_user(user)
-
-        # Redirect to the landing page after successful login
-        return redirect(url_for('landing_page'))
+            # Automatically log in the user after registration
+            login_user(user)
+            return redirect(url_for('landing_page'))
+    
     return render_template('register.html', error=error)
-
+    
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -209,7 +223,35 @@ def history():
     recommendations = Recommendation.query.filter_by(user_id=current_user.id).all()
     return render_template('history.html', recommendations=recommendations)
 
+def get_movie_info(title):
+    year = title[len(title)-5:len(title)-1]
+    title = title[0:len(title)-7]  # Remove the year from the title
+    title = re.sub(r'\(.*?\)', '', title).strip()
+    
+    if ',' in title:
+        parts = title.split(', ')
+        if len(parts) == 2:
+            title = f"{parts[1]} {parts[0]}" 
+    title = re.sub(r'[^a-zA-Z\s]', '', title).strip()
 
+    url = f"http://www.omdbapi.com/?t={title}&apikey={OMDB_API_KEY}&y={year}"
+    print(url)
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        platforms = search_movie_on_justwatch(title)
+        movie_id = search_movie_tmdb(title, TMDB_API_KEY)
+        reviews = get_movie_reviews(movie_id, TMDB_API_KEY)
+    
+        res = response.json()
+        if res['Response'] == "True":
+            res = res | {'Platforms': platforms, 'Reviews': reviews}
+            return res
+        else:  
+            return { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+    else:
+        return  { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+   
 @app.route("/search", methods=["POST"])
 def search():
     term = request.form["q"]
@@ -218,7 +260,6 @@ def search():
     resp = jsonify(filtered_dict)
     resp.status_code = 200
     return resp
-
 
 @app.route('/watchlist')
 @login_required

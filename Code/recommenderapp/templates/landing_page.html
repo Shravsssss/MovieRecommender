@@ -39,6 +39,7 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li class="dropdown-header" >Welcome, {{ current_user.username }}</li>
+                        <li><a href="{{ url_for('profile') }}">Profile</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     </ul>
                 </li>
@@ -91,13 +92,14 @@
         </div>
     </div>
 
+    
+
     <div id="dataCollected" class="container" style="display: none;">
         <h1 style="color:#ebe5e6; font-size: 24px; font-weight: bold;">Thanks!! Your response was stored.</h1>
         <input type="button" id="refreshPage" class="btn btn-danger" name="refreshPage" value="Take another attempt">
     </div>
 
     <style>
-
         /* Navbar styles */
         .navbar {
             border-radius: 0;
