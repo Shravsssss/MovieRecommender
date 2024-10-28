@@ -16,13 +16,15 @@ class Tests(unittest.TestCase):
         filtered_dict = search.resultsTop10(search_word)
         expected_resp = [
             "Toy Story (1995)",
-            "Toys (1992)",
-            "Toy Story 2 (1999)",
-            "Toy, The (1982)",
-            "Toy Soldiers (1991)",
-            "Toy Story 3 (2010)",
-            "Babes in Toyland (1961)",
-            "Babes in Toyland (1934)",
+            "Jumanji (1995)",
+            "Tom and Huck (1995)",
+            "GoldenEye (1995)",
+            "Balto (1995)",
+            "Cutthroat Island (1995)",
+            "City of Lost Children, The (Cité des enfants perdus, La) (1995)",
+            "Mortal Kombat (1995)",
+            "Lamerica (1994)",
+            "Indian in the Cupboard, The (1995)"
         ]
         self.assertTrue(filtered_dict == expected_resp)
 
@@ -179,6 +181,6 @@ class Tests(unittest.TestCase):
             "Babes in Toyland (1934)",
         ]
         self.assertTrue(filtered_dict == expected_resp)
-        
+
 if __name__ == "__main__":
     unittest.main()
