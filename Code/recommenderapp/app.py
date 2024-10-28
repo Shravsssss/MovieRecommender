@@ -8,6 +8,7 @@ import sys
 import csv
 import time
 import requests
+import re
 from datetime import datetime
 from streaming import search_movie_on_justwatch
 from reviews import get_movie_reviews, search_movie_tmdb
@@ -15,8 +16,6 @@ from reviews import get_movie_reviews, search_movie_tmdb
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
 from search import Search
-
-import requests
 
 app = Flask(__name__)
 app.secret_key = "secret key"
@@ -61,20 +60,31 @@ class Watchlist(db.Model):
 
 # Replace 'YOUR_API_KEY' with your actual OMDB API key
 OMDB_API_KEY = 'b726fa05'
-api_key_TMDB = "9f385440fe752884a4f5b8ea5b6839dd"
+TMDB_API_KEY = "9f385440fe752884a4f5b8ea5b6839dd"
 
 def get_movie_info(title):
-    index=len(title)-6
-    url = f"http://www.omdbapi.com/?t={title[0:index]}&apikey={OMDB_API_KEY}"
+    year = title[len(title)-5:len(title)-1]
+    title = title[0:len(title)-7]  # Remove the year from the title
+    title = re.sub(r'\(.*?\)', '', title).strip()
+    
+    if ',' in title:
+        parts = title.split(', ')
+        if len(parts) == 2:
+            title = f"{parts[1]} {parts[0]}" 
+    title = re.sub(r'[^a-zA-Z\s]', '', title).strip()
+
+    url = f"http://www.omdbapi.com/?t={title}&apikey={OMDB_API_KEY}&y={year}"
     print(url)
+
     response = requests.get(url)
     if response.status_code == 200:
         platforms = search_movie_on_justwatch(title)
-        movie_id = search_movie_tmdb(title, api_key_TMDB)
-        reviews = get_movie_reviews(movie_id, api_key_TMDB)
-
-        res=response.json()
-        if(res['Response'] == "True"):
+        movie_id = search_movie_tmdb(title, TMDB_API_KEY)
+        reviews = get_movie_reviews(movie_id, TMDB_API_KEY)
+    
+        res = response.json()
+        if res['Response'] == "True":
+            res = res | {'Platforms': platforms, 'Reviews': reviews}
             return res
         else:  
             return { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
@@ -145,7 +155,6 @@ def logout():
     return redirect(url_for('landing_page'))
 
 
-
 @app.route("/predict", methods=["POST"])
 def predict():
     data = json.loads(request.data)  # contains movies
@@ -154,26 +163,44 @@ def predict():
     for movie in data1:
         movie_with_rating = {"title": movie, "rating": 5.0}
         training_data.append(movie_with_rating)
-    recommendations = recommendForNewUser(training_data)
-    recommendations = recommendations[:10]
 
+    # Get recommendations
+    recommendations = recommendForNewUser(training_data)
+    filtered_recommendations = []
+    movie_with_rating = {}
+    
+    # Process recommendations and only consider those with valid movie info
+    i = 1
     for movie in recommendations:
+        if i > 10:  # Limit to 10 valid recommendations
+            break
+        
+        # Get movie information from OMDB or other source
         movie_info = get_movie_info(movie)
-        # print(movie_info['imdbRating'])
-        if movie_info:
-            # Comments
+        if not movie_info:
+            continue  # If no movie information, skip to the next
+        
+        # Check if the movie has valid IMDb rating, genre, and poster
+        if movie_info['imdbRating'] != 'N/A' and movie_info['Genre'] != 'N/A' and movie_info['Poster'] != 'N/A':
             movie_with_rating[movie+"-c"]=movie_info['Reviews']
             movie_with_rating[movie+"-s"]=movie_info['Platforms']
-            movie_with_rating[movie+"-r"]=movie_info['imdbRating']
-            movie_with_rating[movie+"-g"]=movie_info['Genre']
-            movie_with_rating[movie+"-p"]=movie_info['Poster']
-        
-        new_recommendation = Recommendation(user_id=current_user.id, movie_title=movie)
-        db.session.add(new_recommendation)
-    
+            movie_with_rating[movie + "-r"] = movie_info['imdbRating']
+            movie_with_rating[movie + "-g"] = movie_info['Genre']
+            movie_with_rating[movie + "-p"] = movie_info['Poster']
+            
+            # Add valid recommendation to filtered recommendations
+            filtered_recommendations.append(movie)
+            
+            # Save the recommendation to the database
+            new_recommendation = Recommendation(user_id=current_user.id, movie_title=movie)
+            db.session.add(new_recommendation)
+            
+            # Increment the count of valid recommendations
+            i += 1
+
     db.session.commit()
 
-    resp = {"recommendations": recommendations, "rating":movie_with_rating}
+    resp = {"recommendations": filtered_recommendations, "rating":movie_with_rating}
     return resp
 
 @app.route("/history")
