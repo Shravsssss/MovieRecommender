@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -53,6 +53,11 @@ class Recommendation(db.Model):
     def __repr__(self):
         return f'<Recommendation {self.movie_title}>'
 
+class Watchlist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    movie_title = db.Column(db.String(250), nullable=False)
+    imdb_rating = db.Column(db.String(10))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # Replace 'YOUR_API_KEY' with your actual OMDB API key
 OMDB_API_KEY = 'b726fa05'
@@ -142,24 +147,6 @@ def logout():
 
 
 @app.route("/predict", methods=["POST"])
-# def predict():
-#     data = json.loads(request.data)  # contains movies
-#     data1 = data["movie_list"]
-#     training_data = []
-#     for movie in data1:
-#         movie_with_rating = {"title": movie, "rating": 5.0}
-#         training_data.append(movie_with_rating)
-#     recommendations = recommendForNewUser(movie_with_rating)
-    
-#     for movie in data1:    
-#         movie_info = get_movie_info(movie)
-#         if movie_info:
-#             movie_with_rating["title"]=movie
-#             movie_with_rating["rating"]=movie_info["imdbRating"]
-    
-#     recommendations = recommendations[:10]
-#     resp = {"recommendations": recommendations}
-#     return resp
 def predict():
     data = json.loads(request.data)  # contains movies
     data1 = data["movie_list"]
@@ -204,6 +191,56 @@ def search():
     resp = jsonify(filtered_dict)
     resp.status_code = 200
     return resp
+
+
+@app.route('/watchlist')
+@login_required
+def view_watchlist():
+    # Fetch the user's watchlist
+    watchlist_movies = Watchlist.query.filter_by(user_id=current_user.id).all()
+    
+    # Check if the watchlist is empty
+    if not watchlist_movies:
+        flash("You have no movies in your watchlist.", "info")
+        return render_template('watchlist.html', watchlist=watchlist_movies, empty=True)
+    
+    return render_template('watchlist.html', watchlist=watchlist_movies, empty=False)
+
+@app.route('/add_to_watchlist', methods=['POST'])
+@login_required
+def add_to_watchlist():
+    movie_title = request.form.get('movie_title')
+    imdb_rating = request.form.get('imdb_rating')
+    
+    # Check if the movie is already in the user's watchlist
+    existing_movie = Watchlist.query.filter_by(user_id=current_user.id, movie_title=movie_title).first()
+    if existing_movie:
+        flash('Movie is already in your watchlist!', 'warning')
+        return redirect(url_for('view_watchlist'))
+    
+    # Add the movie to the user's watchlist
+    new_movie = Watchlist(movie_title=movie_title, imdb_rating=imdb_rating, user_id=current_user.id)
+    db.session.add(new_movie)
+    db.session.commit()
+    
+    flash('Movie added to your watchlist!', 'success')
+    return redirect(url_for('view_watchlist'))
+
+@app.route('/remove_from_watchlist/<int:movie_id>', methods=['POST'])
+@login_required
+def remove_from_watchlist(movie_id):
+    movie = Watchlist.query.get_or_404(movie_id)
+    
+    # Ensure the movie belongs to the current user
+    if movie.user_id != current_user.id:
+        flash('You do not have permission to remove this movie!', 'danger')
+        return redirect(url_for('view_watchlist'))
+    
+    db.session.delete(movie)
+    db.session.commit()
+    
+    flash('Movie removed from your watchlist.', 'success')
+    return redirect(url_for('view_watchlist'))
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
