@@ -63,6 +63,29 @@
             </div>
         </div>
 
+        <!-- Filters Section -->
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-6">
+                <label for="genre-select">Filter by Genres:</label>
+                <select id="genre-select" class="form-control" multiple>
+                    <option value="Action">Action</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="rating-filter">Filter by Rating (min):</label>
+                <input type="number" id="rating-filter" class="form-control" placeholder="Enter min rating (0-10)" min="0" max="10">
+            </div>
+        </div>
+        <div class="text-center" style="margin-top: 10px;">
+            <button class="btn btn-danger" id="filterMovies">Apply Filters</button>
+        </div>
+
         <!-- Selected Movies and Predict Button -->
         <div class="row" style="margin-top: 5px;">
             <div class="col-md-10">
@@ -362,6 +385,9 @@
 <script>
 
     $(document).ready(function () {
+        // Store predicted movies for filtering
+        let allPredictedMovies = [];
+
         function displayErrorMessage(message) {
             $('#errorMessageText').text(message);
             $('#errorMessage').show(); // Show the error card
@@ -433,40 +459,17 @@
                 success: function (response) {
                     var predictedMovies = $('#predictedMovies');
                     predictedMovies.empty();
-                    response['recommendations'].forEach(function (element, index) {
-                        var movieCard = `
-                            <div class="card">
-                                <img src="${response['rating'][element + '-p']}" alt="Movie Poster">
-                                <h5 class="card-title">${element}</h5>
-                                <p class="card-text">IMDb Rating: ${response['rating'][element + '-r']}</p>
-                                <p class="card-text">Genre: ${response['rating'][element + '-g']}</p>
-                                
-                                <!-- Watchlist Button -->
-                                <form action="/add_to_watchlist" method="POST">
-                                    <input type="hidden" name="movie_title" value="${element}">
-                                    <input type="hidden" name="imdb_rating" value="${response['rating'][element + '-r']}">
-                                    <button type="submit" class="btn btn-primary">Add to Watchlist</button>
-                                </form>
 
-                                <!-- Reviews -->
-                                <button class="btn btn-primary" id="reviews-button-${index}" onclick="showReviews('${element}')">Check Reviews</button>
-                                
-                                <!-- Check Streaming Platforms Button -->
-                                <button class="btn btn-primary" id="platforms-button-${index}" onclick="showStreamingPlatforms('${element}', ${index})">\Streaming Platforms</button>
-
-                                <!-- Feedback -->
-                                <label for="feedback-${index}">Feedback:</label>
-                                <select class="form-control" id="feedback-${index}">
-                                    <option value="Yet to Watch" style="font-size: 10px;">Yet to Watch</option>
-                                    <option value="Like" style="font-size: 10px;">Like</option>
-                                    <option value="Dislike" style="font-size: 10px;">Dislike</option>
-                                </select>
-                            </div>
-                        `;
-                        predictedMovies.append(movieCard);
-
-                    });
-
+                    // Store all predicted movies for filtering later
+                    allPredictedMovies = response['recommendations'].map((element, index) => ({
+                        title: element,
+                        poster: response['rating'][element + '-p'],
+                        rating: parseFloat(response['rating'][element + '-r']),
+                        genres: response['rating'][element + '-g'],
+                    }));
+                    
+                    displayMovies(allPredictedMovies);
+                    
                     $("#submitAllFeedback").show();
                 },
                 error: function (error) {
@@ -474,6 +477,45 @@
                 }
             });
         });
+
+        // Function to display movies
+        function displayMovies(movies) {
+            var predictedMovies = $('#predictedMovies');
+            predictedMovies.empty();
+            movies.forEach(function (movie, index) {
+                var movieCard = `
+                    <div class="card">
+                        <img src="${movie.poster}" alt="Movie Poster">
+                        <h5 class="card-title">${movie.title}</h5>
+                        <p class="card-text">IMDb Rating: ${movie.rating}</p>
+                        <p class="card-text">Genre: ${movie.genres}</p>
+                        
+                        <!-- Watchlist Button -->
+                        <form action="/add_to_watchlist" method="POST">
+                            <input type="hidden" name="movie_title" value="${movie.title}">
+                            <input type="hidden" name="imdb_rating" value="${movie.rating}">
+                            <button type="submit" class="btn btn-primary">Add to Watchlist</button>
+                        </form>
+
+                        <!-- Reviews -->
+                        <button class="btn btn-primary" id="reviews-button-${index}" onclick="showReviews('${movie.title}')">Check Reviews</button>
+                        
+                        <!-- Check Streaming Platforms Button -->
+                        <button class="btn btn-primary" id="platforms-button-${index}" onclick="showStreamingPlatforms('${movie.title}', ${index})">\Streaming Platforms</button>
+
+                        <!-- Feedback -->
+                        <label for="feedback-${index}">Feedback:</label>
+                        <select class="form-control" id="feedback-${index}">
+                            <option value="Yet to Watch" style="font-size: 10px;">Yet to Watch</option>
+                            <option value="Like" style="font-size: 10px;">Like</option>
+                            <option value="Dislike" style="font-size: 10px;">Dislike</option>
+                        </select>
+                    </div>
+                `;
+                predictedMovies.append(movieCard);
+
+            });
+        }
 
         // Submit All Feedback Logic
         $('#submitAllFeedback').click(function () {
@@ -504,6 +546,20 @@
                     alert("Failed to submit feedback");
                 }
             });
+        });
+
+        // Filtering Logic
+        $('#filterMovies').click(function () {
+            const selectedGenres = $('#genre-select').val(); // Get selected genres
+            const minRating = parseFloat($('#rating-filter').val()); // Get minimum rating
+
+            const filteredMovies = allPredictedMovies.filter(movie => {
+                const genreMatch = selectedGenres.length === 0 || selectedGenres.some(genre => movie.genres.includes(genre));
+                const ratingMatch = isNaN(minRating) || movie.rating >= minRating;
+                return genreMatch && ratingMatch;
+            });
+
+            displayMovies(filteredMovies);
         });
 
         function fetchYouTubeVideoLinks(movieTitle, cardBody) {

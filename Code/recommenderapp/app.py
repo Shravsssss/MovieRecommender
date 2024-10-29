@@ -11,6 +11,7 @@ import requests
 from datetime import datetime
 from tmdb_utils import get_movie_reviews, get_streaming_providers, search_movie_tmdb
 import re
+import pandas as pd
 
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
@@ -271,26 +272,47 @@ def search():
     resp.status_code = 200
     return resp
 
+# Initialize Filter instance
+filter = Filter()
 
+# Route to render the filtering page
+@app.route("/filtering")
+@login_required
+def filtering():
+    return render_template('filtering.html')
+
+# Route to filter movies by rating
 @app.route("/ratingfilter", methods=["POST"])
 def ratingfilter():
-    term = request.form["q"]
-    search = Filter()
-    filtered_dict = search.resultsTop10rate(term)
-    resp = jsonify(filtered_dict)
-    resp.status_code = 200
-    return resp
+    rating = float(request.form.get("rating"))
+    
+    if rating is None:
+        return jsonify({"error": "Rating not provided"}), 400
+    
+    filtered_movies = filter.resultsTop10rate(rating)
+    
+    # Convert pandas Series or DataFrame results to a list
+    filtered_movies_list = [movie.tolist() if isinstance(movie, pd.Series) else movie for movie in filtered_movies]
+    
+    if not filtered_movies_list:
+        return jsonify({"error": "No movies found for the given rating"}), 404
+    
+    return jsonify({"filtered_movies": filtered_movies_list}), 200
 
+# Route to filter movies by genre
 @app.route("/genrefilter", methods=["POST"])
 def genrefilter():
-    term = request.form["q"]
-    # convert to list
-    genres = term.split(',')
-    search = Filter()
-    filtered_dict = search.resultsTop10rate(genres)
-    resp = jsonify(filtered_dict)
-    resp.status_code = 200
-    return resp
+    genres = request.form.getlist("genres")  # Expecting genres as a list from the form
+    
+    if not genres:
+        return jsonify({"error": "No genres provided"}), 400
+    
+    filtered_movies = filter.resultsTop10(genres)
+    
+    if not filtered_movies:
+        return jsonify({"error": "No movies found for the given genres"}), 404
+    
+    return jsonify({"filtered_movies": filtered_movies}), 200
 
 @app.route('/watchlist')
 @login_required
