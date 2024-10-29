@@ -48,9 +48,9 @@
     </nav>
     
     <!-- Main Container -->
-    <div class="container" style="margin-top: 80px;">
+    <div class="container" style="margin-top: 50px;">
         <!-- Centered Search Bar and Refresh Button -->
-        <div class="row text-center" style="margin: 70px;">
+        <div class="row text-center" style="margin: 30px;">
             <h2 style="color:#ebe5e6; font-size: 30px; font-weight: bold;">Search for Movies</h2>
             <div class="col-md-8 col-md-offset-2" style="display: flex; align-items: center; justify-content: center;">
                
@@ -64,14 +64,14 @@
         </div>
 
         <!-- Selected Movies and Predict Button -->
-        <div class="row" style="margin-top: 20px;">
-            <div class="col-md-8">
+        <div class="row" style="margin-top: 5px;">
+            <div class="col-md-10">
                 <h2 style="color:#ebe5e6; font-size: 24px; font-weight: bold;">Predicted Movies</h2>
                 <div class="scrollable-card-container">
                     <div id="predictedMovies" class="card-container"></div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
                 <h2 style="color:#ebe5e6; font-size: 24px; font-weight: bold;">Selected Movies</h2>
                 <ul id="selectedMovies" class="list-unstyled">
                     <div class="card-container" id="selectedMovies">
@@ -92,7 +92,19 @@
         </div>
     </div>
 
-    
+    <!-- Reviews Dialog (hidden initially) -->
+    <div id="reviewsDialog" title="Movie Reviews" style="display:none;">
+        <div id="reviewsContent">
+            <!-- Reviews content will be dynamically loaded here -->
+        </div>
+    </div>  
+
+    <!-- Streaming Platforms Dialog (hidden initially) -->
+    <div id="platformsDialog" title="Available Streaming Platforms" style="display:none;">
+        <div id="platformsContent" style="display: flex; justify-content: space-around;">
+            <!-- Streaming platform icons will be dynamically loaded here -->
+        </div>
+    </div>
 
     <div id="dataCollected" class="container" style="display: none;">
         <h1 style="color:#ebe5e6; font-size: 24px; font-weight: bold;">Thanks!! Your response was stored.</h1>
@@ -239,7 +251,6 @@
             height: 50px; /* Adjust the height */
             text-align: center;
         }
-
     </style>
 
 </body>
@@ -257,6 +268,96 @@
             console.log('YouTube API initialized');
         });
     }
+
+    // Function to show reviews in a dialog box when "Check Reviews" button is clicked
+    function showReviews(movieTitle) {
+            // Send the original movie title to the backend
+            $.ajax({
+                type: "GET",
+                url: `/get_reviews/${encodeURIComponent(movieTitle)}`,  // Fetch reviews from the backend
+                success: function (response) {
+                    var reviewsHtml = '';
+                    response.reviews.forEach(function(review) {
+                        reviewsHtml += `<p><strong>${review.author}</strong>: ${review.content}</p>`;
+                    });
+
+                    if (reviewsHtml === '') {
+                        reviewsHtml = '<p>No reviews available for this movie.</p>';
+                    }
+
+                    $('#reviewsContent').html(reviewsHtml);  // Update the dialog content with reviews
+                    
+                    // Open the dialog box with jQuery UI
+                    $("#reviewsDialog").dialog({
+                        modal: true,
+                        width: 600,
+                        buttons: {
+                            Close: function() {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.log('Error fetching reviews:', error);
+                    $('#reviewsContent').html('<p>Failed to load reviews. Please try again later.</p>');
+                    $("#reviewsDialog").dialog({
+                        modal: true,
+                        width: 600,
+                        buttons: {
+                            Close: function() {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        // Function to show streaming platforms in a dialog box when "Check Streaming Platforms" button is clicked
+        function showStreamingPlatforms(movieTitle, index) {
+            // Clear any previous platform data
+            $('#platformsContent').html('<p>Loading streaming platforms...</p>');
+
+            // Fetch the streaming providers for the movie when the button is clicked
+            $.ajax({
+                type: "GET",
+                url: `/get_streaming_platforms/${encodeURIComponent(movieTitle)}`,
+                success: function (response) {
+                    var streamingHtml = '';
+
+                    // Check if platforms are available in the response
+                    if (response.length === 0) {
+                        // If no platforms are available, show message
+                        streamingHtml = '<p>This movie is not available in the US region.</p>';
+                    } else {
+                        // Only show the first four platforms
+                        var platforms = response.slice(0, 4);
+                        platforms.forEach(function (platform) {
+                            streamingHtml += `<img src="${platform.logo}" alt="${platform.name}" style="width: 50px; height: 50px;">`;
+                        });
+                    }
+
+                    // Insert streaming platforms or message into the dialog content
+                    $('#platformsContent').html(streamingHtml);
+
+                    // Open the dialog box with jQuery UI
+                    $("#platformsDialog").dialog({
+                        modal: true,
+                        width: 600,
+                        buttons: {
+                            Close: function() {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.log('Error fetching streaming platforms:', error);
+                    $('#platformsContent').html('<p>Failed to load streaming platforms.</p>');
+                }
+            });
+        }
 </script>
 <script>
 
@@ -339,21 +440,31 @@
                                 <h5 class="card-title">${element}</h5>
                                 <p class="card-text">IMDb Rating: ${response['rating'][element + '-r']}</p>
                                 <p class="card-text">Genre: ${response['rating'][element + '-g']}</p>
-                                <label for="feedback-${index}">Feedback:</label>
-                                <select class="form-control" id="feedback-${index}">
-                                    <option value="Yet to Watch" style="font-size: 10px;">Yet to Watch</option>
-                                    <option value="Like" style="font-size: 10px;">Like</option>
-                                    <option value="Dislike" style="font-size: 10px;">Dislike</option>
-                                </select>
+                                
                                 <!-- Watchlist Button -->
                                 <form action="/add_to_watchlist" method="POST">
                                     <input type="hidden" name="movie_title" value="${element}">
                                     <input type="hidden" name="imdb_rating" value="${response['rating'][element + '-r']}">
                                     <button type="submit" class="btn btn-primary">Add to Watchlist</button>
                                 </form>
+
+                                <!-- Reviews -->
+                                <button class="btn btn-primary" id="reviews-button-${index}" onclick="showReviews('${element}')">Check Reviews</button>
+                                
+                                <!-- Check Streaming Platforms Button -->
+                                <button class="btn btn-primary" id="platforms-button-${index}" onclick="showStreamingPlatforms('${element}', ${index})">\Streaming Platforms</button>
+
+                                <!-- Feedback -->
+                                <label for="feedback-${index}">Feedback:</label>
+                                <select class="form-control" id="feedback-${index}">
+                                    <option value="Yet to Watch" style="font-size: 10px;">Yet to Watch</option>
+                                    <option value="Like" style="font-size: 10px;">Like</option>
+                                    <option value="Dislike" style="font-size: 10px;">Dislike</option>
+                                </select>
                             </div>
                         `;
                         predictedMovies.append(movieCard);
+
                     });
 
                     $("#submitAllFeedback").show();

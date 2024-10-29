@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, flash
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,11 +8,9 @@ import sys
 import csv
 import time
 import requests
-import re
-import re
 from datetime import datetime
-from streaming import search_movie_on_justwatch
-from reviews import get_movie_reviews, search_movie_tmdb
+from tmdb_utils import get_movie_reviews, get_streaming_providers, search_movie_tmdb
+import re
 
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
@@ -62,6 +60,7 @@ class Watchlist(db.Model):
     movie_title = db.Column(db.String(250), nullable=False)
     imdb_rating = db.Column(db.String(10))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 
 # Replace 'YOUR_API_KEY' with your actual OMDB API key
 OMDB_API_KEY = 'b726fa05'
@@ -225,33 +224,43 @@ def history():
 
 def get_movie_info(title):
     year = title[len(title)-5:len(title)-1]
-    title = title[0:len(title)-7]  # Remove the year from the title
-    title = re.sub(r'\(.*?\)', '', title).strip()
-    
-    if ',' in title:
-        parts = title.split(', ')
-        if len(parts) == 2:
-            title = f"{parts[1]} {parts[0]}" 
-    title = re.sub(r'[^a-zA-Z\s]', '', title).strip()
+    title = format_title(title)
 
     url = f"http://www.omdbapi.com/?t={title}&apikey={OMDB_API_KEY}&y={year}"
     print(url)
 
     response = requests.get(url)
     if response.status_code == 200:
-        platforms = search_movie_on_justwatch(title)
+        platforms = get_streaming_providers(title, TMDB_API_KEY)
         movie_id = search_movie_tmdb(title, TMDB_API_KEY)
         reviews = get_movie_reviews(movie_id, TMDB_API_KEY)
+
+        reviews_list = []
+        for review in reviews:
+            reviews_list.append({"author": review['author'], "content": review['content']})
     
         res = response.json()
         if res['Response'] == "True":
-            res = res | {'Platforms': platforms, 'Reviews': reviews}
+            res = res | {'Platforms': platforms, 'Reviews': reviews_list}
             return res
         else:  
-            return { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+            return { 'Title': title, 'Platforms': "N/A", 'Reviews': "N/A", 'imdbRating':"N/A", 'Genre':'N/A',"Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
     else:
-        return  { 'Title': title, 'Platforms': platforms, 'Reviews': reviews, 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
-   
+        return  { 'Title': title, 'Platforms': "N/A", 'Reviews': "N/A", 'imdbRating':"N/A",'Genre':'N/A', "Poster":"https://www.creativefabrica.com/wp-content/uploads/2020/12/29/Line-Corrupted-File-Icon-Office-Graphics-7428407-1.jpg"}
+
+def format_title(movie_title):
+    movie_title = movie_title[0:len(movie_title)-7]  # Remove the year from the movie_title
+    movie_title = re.sub(r'\(.*?\)', '', movie_title).strip()
+    
+    if ',' in movie_title:
+        parts = movie_title.split(', ')
+        if len(parts) == 2:
+            movie_title = f"{parts[1]} {parts[0]}" 
+
+    movie_title = re.sub(r'[^a-zA-Z\s]', '', movie_title).strip()
+    movie_title = movie_title.replace("%20", " ")
+    return movie_title
+
 @app.route("/search", methods=["POST"])
 def search():
     term = request.form["q"]
@@ -317,6 +326,35 @@ def feedback():
         for key in data.keys():
             f.write(f"{key} - {data[key]}\n")
     return data
+
+@app.route('/get_reviews/<movie_title>', methods=['GET'])
+def get_reviews(movie_title):
+    movie_title = format_title(movie_title)
+    movie_id = search_movie_tmdb(movie_title, TMDB_API_KEY)
+    
+    if movie_id:
+        reviews = get_movie_reviews(movie_id, TMDB_API_KEY)
+        reviews_list = [{"author": review['author'], "content": review['content']} for review in reviews]
+        return jsonify({"reviews": reviews_list})
+    else:
+        return jsonify({"reviews": []}), 404
+
+
+@app.route('/get_streaming_platforms/<movie_title>', methods=['GET'])
+def get_streaming_platforms(movie_title):
+    year = movie_title[len(movie_title)-5:len(movie_title)-1]
+    movie_title = format_title(movie_title)
+    movie_id = search_movie_tmdb(movie_title, TMDB_API_KEY, year)
+    
+    if not movie_id:
+        return jsonify([])  # No movie found
+    
+    streaming_info = get_streaming_providers(movie_id, TMDB_API_KEY)
+    if streaming_info:
+        return jsonify([{"name": platform_name, "logo": platform_logo} for platform_name, platform_logo in streaming_info])
+    else:
+        return jsonify([])  # No streaming info found
+
 
 @app.route("/success")
 def success():
