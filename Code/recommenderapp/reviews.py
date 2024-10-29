@@ -13,7 +13,17 @@ def get_movie_reviews(movie_id, api_key):
         return None
     
     reviews = response.json().get('results', [])
-    return reviews[:max(len(reviews), 10)]
+    results = reviews[:max(len(reviews), 5)]
+    length = 0
+    const = 1000
+    show = []
+    # Results max 1000 characters 
+    for each in results:
+        if length + len(each) <= const:
+            show.append(each)
+        else:
+            show.append(each[:const - length])
+    return show
 
 def search_movie_tmdb(movie_name, api_key):
     url = "https://api.themoviedb.org/3/search/movie"
