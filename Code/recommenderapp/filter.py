@@ -1,6 +1,5 @@
 import pandas as pd
 
-# from app import app
 from flask import jsonify, request, render_template
 import sys
 import os
@@ -31,22 +30,19 @@ class Filter:
 
     # With this function it is possible to have multiple pages to show 
     # more than just the first 10
-    def resultsgenre(self, genre):
+    def resultsgenre(self, genres):
         res = []
         for index, row in self.df.iterrows():
-            flag = True
-            for each in genre:
-                if each not in row["genres"]:
-                    flag = False
-            if flag:
+            movie_genres = row["genres"].split('|')  # Assuming genres are separated by '|'
+            if any(genre in movie_genres for genre in genres):
                 res.append(row["title"])
         return res
 
-    def resultsTop10rate(self, word):
-        return self.resultsratings(word)[:10]
+    def resultsTop10rate(self, rate):
+        return self.resultsratings(rate)[:10]
     
-    def resultsTop10(self, word):
-        return self.resultsgenre(word)[:10]
+    def resultsTop10(self, genre):
+        return self.resultsgenre(genre)[:10]
 
 
 filter = Filter()
