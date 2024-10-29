@@ -59,4 +59,16 @@ def get_movie_reviews(movie_id, API_KEY):
         return None
     
     reviews = response.json().get('results', [])
-    return reviews[:min(len(reviews), 10)]
+    results = reviews[:max(len(reviews), 5)]
+    length = 0
+    const = 1000
+    show = []
+    # Results max 1000 characters 
+    for each in results:
+        if length + len(each["content"]) <= const:
+            length += len(each["content"])
+            show.append(each)
+        else:
+            break
+    print(length)
+    return show 
