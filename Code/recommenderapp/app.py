@@ -15,6 +15,7 @@ import re
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
 from search import Search
+from filter import Filter
 
 app = Flask(__name__)
 app.secret_key = "secret key"
@@ -270,6 +271,27 @@ def search():
     resp.status_code = 200
     return resp
 
+
+@app.route("/ratingfilter", methods=["POST"])
+def ratingfilter():
+    term = request.form["q"]
+    search = Filter()
+    filtered_dict = search.resultsTop10rate(term)
+    resp = jsonify(filtered_dict)
+    resp.status_code = 200
+    return resp
+
+@app.route("/genrefilter", methods=["POST"])
+def genrefilter():
+    term = request.form["q"]
+    # convert to list
+    genres = term.split(',')
+    search = Filter()
+    filtered_dict = search.resultsTop10rate(genres)
+    resp = jsonify(filtered_dict)
+    resp.status_code = 200
+    return resp
+
 @app.route('/watchlist')
 @login_required
 def view_watchlist():
@@ -318,6 +340,7 @@ def remove_from_watchlist(movie_id):
     
     flash('Movie removed from your watchlist.', 'success')
     return redirect(url_for('view_watchlist'))
+
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
