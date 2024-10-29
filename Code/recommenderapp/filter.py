@@ -21,22 +21,29 @@ class Filter:
     def resultsratings(self, rate):
         res = []
         movies = []
-        for x in self.df.rows:
-            if rate >= x["rating"]:
-                res.append(x["movieId"])
+        for index, row in self.df.iterrows():
+            if rate >= row["rating"]:
+                res.append(row["movieId"])
         movies = self.df["title"].iloc[self.df["movieId"] in res]
         return movies
 
     def resultsgenre(self, genre):
         res = []
-        for x in self.df.rows:
-            if genre in x["genres"]:
-                res.append(x["title"])
+        for index, row in self.df.iterrows():
+            flag = True
+            for each in genre:
+                if each not in row["genres"]:
+                    flag = False
+            if flag:
+                res.append(row["title"])
         return res
 
-    def resultsTop10genre(self, word):
+    def resultsTop10rate(self, word):
+        return self.resultsrate(word)[:10]
+    
+    def resultsTop10(self, word):
         return self.resultsgenre(word)[:10]
 
 
-if __name__ == "__main__":
-    app.run()
+filter = Filter()
+print(filter.resultsTop10(["Animation", "Comedy"]))
