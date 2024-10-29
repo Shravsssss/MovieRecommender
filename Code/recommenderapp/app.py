@@ -15,6 +15,7 @@ from reviews import get_movie_reviews, search_movie_tmdb
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
 from search import Search
+from filter import Filter
 
 import requests
 
@@ -201,6 +202,26 @@ def search():
     term = request.form["q"]
     search = Search()
     filtered_dict = search.resultsTop10(term)
+    resp = jsonify(filtered_dict)
+    resp.status_code = 200
+    return resp
+
+@app.route("/ratingfilter", methods=["POST"])
+def ratingfilter():
+    term = request.form["q"]
+    search = Filter()
+    filtered_dict = search.resultsTop10rate(term)
+    resp = jsonify(filtered_dict)
+    resp.status_code = 200
+    return resp
+
+@app.route("/genrefilter", methods=["POST"])
+def genrefilter():
+    term = request.form["q"]
+    # convert to list
+    genres = term.split(',')
+    search = Filter()
+    filtered_dict = search.resultsTop10rate(genres)
     resp = jsonify(filtered_dict)
     resp.status_code = 200
     return resp
