@@ -19,11 +19,13 @@ def get_movie_reviews(movie_id, api_key):
     show = []
     # Results max 1000 characters 
     for each in results:
-        if length + len(each) <= const:
+        if length + len(each["content"]) <= const:
+            length += len(each["content"])
             show.append(each)
         else:
-            show.append(each[:const - length])
-    return show
+            break
+    print(length)
+    return show 
 
 def search_movie_tmdb(movie_name, api_key):
     url = "https://api.themoviedb.org/3/search/movie"
