@@ -21,29 +21,30 @@ class Filter:
     def resultsratings(self, rate):
         res = []
         movies = []
-        for index, row in self.df.iterrows():
+        for index, row in self.ratings.iterrows():
             if rate >= row["rating"]:
                 res.append(row["movieId"])
-        movies = self.df["title"].iloc[self.df["movieId"] in res]
+        for each in res:
+           movies.append(self.df["title"][self.df["movieId"] == each])
+        # movies = self.df["title"][self.df["movieId"] in res]
         return movies
 
-    def resultsgenre(self, genre):
+    # With this function it is possible to have multiple pages to show 
+    # more than just the first 10
+    def resultsgenre(self, genres):
         res = []
         for index, row in self.df.iterrows():
-            flag = True
-            for each in genre:
-                if each not in row["genres"]:
-                    flag = False
-            if flag:
+            movie_genres = row["genres"].split('|')  # Assuming genres are separated by '|'
+            if any(genre in movie_genres for genre in genres):
                 res.append(row["title"])
         return res
 
-    def resultsTop10rate(self, word):
-        return self.resultsrate(word)[:10]
+    def resultsTop10rate(self, rate):
+        return self.resultsratings(rate)[:10]
     
-    def resultsTop10(self, word):
-        return self.resultsgenre(word)[:10]
+    def resultsTop10(self, genre):
+        return self.resultsgenre(genre)[:10]
 
 
 filter = Filter()
-print(filter.resultsTop10(["Animation", "Comedy"]))
+print(filter.resultsTop10rate(2))
