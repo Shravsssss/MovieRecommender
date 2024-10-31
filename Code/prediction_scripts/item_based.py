@@ -23,10 +23,11 @@ def recommendForNewUser(user_rating):
     movies = pd.read_csv(project_dir + "/data/movies.csv")
     user = pd.DataFrame(user_rating)
 
-    # Strip leading and trailing spaces from titles
-    user["title"] = user["title"].str.strip()
-    movies["title"] = movies["title"].str.strip()
+    # Strip leading and trailing spaces from titles and convert titles to lowercase for case-insensitive matching
+    user["title"] = user["title"].str.strip().str.lower()
+    movies["title"] = movies["title"].str.strip().str.lower()
 
+    # Merge user ratings with movies based on lowercase titles
     userMovieID = movies[movies["title"].isin(user["title"])]
     userRatings = pd.merge(userMovieID, user)
 

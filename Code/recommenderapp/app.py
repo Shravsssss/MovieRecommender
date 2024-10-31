@@ -91,13 +91,7 @@ def edit_profile():
 @app.route("/change_password", methods=["POST"])
 @login_required
 def change_password():
-    current_password = request.form.get("current_password")
     new_password = request.form.get("new_password")
-
-    if not current_user.check_password(current_password):
-        flash("Current password is incorrect.", "danger")
-        return redirect(url_for('profile'))
-
     current_user.set_password(new_password)
     db.session.commit()
     flash("Password changed successfully!", "success")
@@ -194,6 +188,7 @@ def predict():
         movie_info = get_movie_info(movie)
         if not movie_info:
             continue  # If no movie information, skip to the next
+        movie = movie_info["Title"]
         
         # Check if the movie has valid IMDb rating, genre, and poster
         if movie_info['imdbRating'] != 'N/A' and movie_info['Genre'] != 'N/A' and movie_info['Poster'] != 'N/A':
