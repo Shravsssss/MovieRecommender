@@ -115,8 +115,7 @@ class Tests(unittest.TestCase):
         rate = 5
         search = Filter()
         filtered_dict = search.resultsTop10rate(rate)
-        expected_resp = 
-        [
+        expected_resp =  [
             "Toy Story (1995)"
             "Grumpier Old Men (1995)",
             "Heat (1995)",
