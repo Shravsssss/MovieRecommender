@@ -46,4 +46,5 @@ class Filter:
 
 
 filter = Filter()
+print(filter.resultsTop10rate(2))
 print(filter.resultsTop10rate(4))
