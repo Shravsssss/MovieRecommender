@@ -1,6 +1,5 @@
 import pandas as pd
 
-# from app import app
 from flask import jsonify, request, render_template
 import sys
 import os
@@ -48,3 +47,4 @@ class Filter:
 
 filter = Filter()
 print(filter.resultsTop10rate(2))
+print(filter.resultsTop10rate(4))
