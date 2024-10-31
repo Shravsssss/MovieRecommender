@@ -18,7 +18,7 @@ class RecommendationTests(unittest.TestCase):
         Verifies that recommendations are generated when a valid movie title
         with a valid rating is provided.
         """
-        movies = [{"title": "Inception", "rating": 5.0}]
+        movies = [{"title": "Inception (2010)", "rating": 5.0}]
         self.assertTrue(recommendForNewUser(movies), "Expected recommendations")
 
     def test_recommendation_empty_movies(self):
@@ -34,7 +34,7 @@ class RecommendationTests(unittest.TestCase):
         
         Verifies that recommendations do not duplicate the user's rated movies.
         """
-        movies = [{"title": "Inception", "rating": 5.0}, {"title": "Inception", "rating": 5.0}]
+        movies = [{"title": "Inception (2010)", "rating": 5.0}, {"title": "Inception (2010)", "rating": 5.0}]
         self.assertTrue(recommendForNewUser(movies), "Expected recommendations without duplicates")
 
     def test_recommendation_missing_rating(self):
@@ -42,7 +42,7 @@ class RecommendationTests(unittest.TestCase):
         
         Expects a KeyError if the 'rating' key is missing from any movie entry.
         """
-        movies = [{"title": "Inception"}]
+        movies = [{"title": "Inception (2010)"}]
         self.assertRaises(KeyError, recommendForNewUser, movies)
 
     def test_recommendation_high_rating_filter(self):
@@ -50,7 +50,7 @@ class RecommendationTests(unittest.TestCase):
         
         Provides a movie rating of 9.0 (out of range) and expects no recommendations.
         """
-        movies = [{"title": "Inception", "rating": 9.0}]
+        movies = [{"title": "Inception (2010)", "rating": 9.0}]
         self.assertEqual(recommendForNewUser(movies), [], "Expected no recommendations for out-of-range rating")
 
     def test_recommendation_low_rating_filter(self):
@@ -58,7 +58,7 @@ class RecommendationTests(unittest.TestCase):
         
         Provides a low rating (1.0) and expects valid recommendations based on that rating.
         """
-        movies = [{"title": "Inception", "rating": 1.0}]
+        movies = [{"title": "Inception (2010)", "rating": 1.0}]
         self.assertTrue(recommendForNewUser(movies), "Expected recommendations for low rating filter")
 
     def test_recommendation_invalid_movie_format(self):
@@ -66,7 +66,7 @@ class RecommendationTests(unittest.TestCase):
         
         Expects a TypeError if movie entries are not dictionaries.
         """
-        movies = ["Inception"]
+        movies = ["Inception (2010)"]
         self.assertRaises(TypeError, recommendForNewUser, movies)
 
     def test_recommendation_incomplete_movie_data(self):
@@ -82,7 +82,7 @@ class RecommendationTests(unittest.TestCase):
         
         Verifies that recommendations are case-insensitive by using a lowercase title.
         """
-        movies = [{"title": "inception", "rating": 5.0}]
+        movies = [{"title": "inception (2010)", "rating": 5.0}]
         self.assertTrue(recommendForNewUser(movies), "Expected recommendations with case-insensitive title")
 
     def test_recommendation_no_valid_recommendations(self):
@@ -90,7 +90,7 @@ class RecommendationTests(unittest.TestCase):
         
         Provides an unknown movie title and expects no recommendations.
         """
-        movies = [{"title": "Unknown Movie", "rating": 5.0}]
+        movies = [{"title": "Unknown Movie (2022)", "rating": 5.0}]
         self.assertEqual(recommendForNewUser(movies), [], "Expected no recommendations for unknown movies")
 
     def test_recommendation_invalid_rating_value(self):
@@ -98,7 +98,7 @@ class RecommendationTests(unittest.TestCase):
         
         Provides a list with ratings out of the valid range (0.0-5.0) and expects an empty result.
         """
-        movies = [{"title": "Inception", "rating": -1.0}, {"title": "Interstellar", "rating": 6.0}]
+        movies = [{"title": "Inception (2010)", "rating": -1.0}, {"title": "Interstellar (2014)", "rating": 6.0}]
         self.assertEqual(recommendForNewUser(movies), [], "Expected no recommendations due to invalid rating values")
 
     def test_recommendation_long_movie_title(self):
@@ -115,9 +115,9 @@ class RecommendationTests(unittest.TestCase):
         
         Provides a list of user-rated movies and checks if recommendations exclude them.
         """
-        movies = [{"title": "Inception", "rating": 4.0}]
+        movies = [{"title": "Inception (2010)", "rating": 4.0}]
         recommendations = recommendForNewUser(movies)
-        self.assertNotIn("Inception", recommendations, "Expected user-rated movies to be excluded from recommendations")
+        self.assertNotIn("Inception (2010)", recommendations, "Expected user-rated movies to be excluded from recommendations")
 
 if __name__ == "__main__":
     unittest.main()

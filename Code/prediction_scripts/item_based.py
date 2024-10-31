@@ -25,6 +25,8 @@ def recommendForNewUser(user_rating):
 
     # Strip leading and trailing spaces from titles and convert titles to lowercase for case-insensitive matching
     user["title"] = user["title"].str.strip().str.lower()
+    user = user.drop_duplicates(subset=["title"])
+
     movies["title"] = movies["title"].str.strip().str.lower()
 
     # Merge user ratings with movies based on lowercase titles
@@ -42,13 +44,8 @@ def recommendForNewUser(user_rating):
         return []  # Return an empty list if no valid movie titles are found in the input
 
     moviesGenreFilled = movies.copy(deep=True)
-    copyOfMovies = movies.copy(deep=True)
-    for index, row in copyOfMovies.iterrows():
-        copyOfMovies.at[index, "genres"] = row["genres"].split("|")
-    for index, row in copyOfMovies.iterrows():
-        for genre in row["genres"]:
-            moviesGenreFilled.at[index, genre] = 1
-    moviesGenreFilled = moviesGenreFilled.fillna(0)
+    genre_columns = movies["genres"].str.get_dummies("|")
+    moviesGenreFilled = pd.concat([moviesGenreFilled, genre_columns], axis=1).fillna(0)
 
     userGenre = moviesGenreFilled[moviesGenreFilled.movieId.isin(userRatings.movieId)]
     userGenre.drop(["movieId", "title", "genres"], axis=1, inplace=True)
