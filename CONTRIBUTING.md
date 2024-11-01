@@ -5,9 +5,9 @@
 [style]: https://pep8.org/
 [code-of-conduct]: CODE_OF_CONDUCT.md
 
-We’re excited that you’re interested in contributing to this project! Your support is vital for improving and scaling our **Movie Recommender App**.
+We're excited that you're interested in contributing to this project! Your support is vital for improving and scaling our **Movie Recommender App**.
 
-If you’d like to contribute and collaborate, please notify us via email at **syepuri@ncsu.edu, chegde@ncsu.edu, or mahamdi@ncsu.edu**.
+If you'd like to contribute and collaborate, please notify us via email at **syepuri@ncsu.edu, chegde@ncsu.edu, or mahamdi@ncsu.edu**.
 
 ### Purpose of Contributing
 
@@ -21,7 +21,7 @@ Your contributions help us:
 
 ### Issues and PRs
 
-If you have ideas for improvements or want to report a bug, open an issue! We’d love to hear your thoughts. For larger contributions, feel free to email us or open an issue first to discuss your proposal.
+If you have ideas for improvements or want to report a bug, open an issue! We'd love to hear your thoughts. For larger contributions, feel free to email us or open an issue first to discuss your proposal.
 
 We also welcome pull requests (PRs). When you submit a PR, one of the repository administrators will review it and merge it after the CI build passes.
 
