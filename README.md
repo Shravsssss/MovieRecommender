@@ -40,6 +40,18 @@ Save time and make every movie night a hit. StreamR delivers recommendations bas
 Start your next great movie experience with a single click. 🎉<br><br>
 ![Choosing a Movie](https://media.giphy.com/media/l1J3G5lf06vi58EIE/giphy.gif)
 
+## Exciting Future Plans 🔮
+
+Our vision for StreamR includes:
+
+1. Introducing more diverse genre, rating based recommendations.
+2. Emailing users their latest recommendations for easy access.
+3. Add multiple pages to go through more movies and reviews for search.
+4. Enable sharing through social media and other options.
+5. Add a subscribe option so that users can get emails according to their profile whenever a new movie is released.
+6. Add an option for creating groups with shared watchlists.
+
+StreamR can also be continuously tested with GitHub Actions, keeping our codebase rock-solid! 💪
 
 ## Demo Video ▶️ 
 
