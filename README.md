@@ -38,7 +38,7 @@ Welcome to StreamR! 🚀<br>
 Let us handle the hard part of picking a movie. Just provide your movie titles, and we'll curate a list of top recommendations perfect for your taste! 📽️<br>
 Save time and make every movie night a hit. StreamR delivers recommendations based on your unique preferences so you can focus on the popcorn! 🍿<br>
 Start your next great movie experience with a single click. 🎉<br><br>
-![Choosing a Movie](https://media.giphy.com/media/l1J3G5lf06vi58EIE/giphy.gif)
+![Choosing a Movie](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcm9maXZxMDMxcGF5MDRvM3k4em5kaTRjMmFoam5pNmlzZ3NieTFvaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Sb7WSbjHFNIL6/giphy.gif)
 
 ## Exciting Future Plans 🔮
 
