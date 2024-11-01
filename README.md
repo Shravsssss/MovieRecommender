@@ -40,6 +40,10 @@ Your perfect movie is just a click away. Get started now and make every movie ni
 
 
 
+https://github.com/user-attachments/assets/0363fddc-0874-42bb-8e1b-e38a962394fa
+
+
+
 
 ## Future Project Plan 🔮
 
