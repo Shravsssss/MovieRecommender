@@ -15,8 +15,8 @@ import pandas as pd
 
 sys.path.append("../../")
 from Code.prediction_scripts.item_based import recommendForNewUser
-from search import Search
-from filter import Filter
+from .search import Search
+from .filter import Filter
 
 app = Flask(__name__)
 app.secret_key = "secret key"
@@ -91,15 +91,17 @@ def edit_profile():
 @app.route("/change_password", methods=["POST"])
 @login_required
 def change_password():
-    current_password = request.form.get("current_password")
     new_password = request.form.get("new_password")
-
-    if not current_user.check_password(current_password):
-        flash("Current password is incorrect.", "danger")
+    
+    # Check if the new password is empty and provide feedback without raising an exception
+    if not new_password:
+        flash("Password cannot be empty!", "danger")
         return redirect(url_for('profile'))
-
+    
+    # Set the new password and save to the database
     current_user.set_password(new_password)
     db.session.commit()
+    
     flash("Password changed successfully!", "success")
     return redirect(url_for('profile'))
 
@@ -194,6 +196,7 @@ def predict():
         movie_info = get_movie_info(movie)
         if not movie_info:
             continue  # If no movie information, skip to the next
+        movie = movie_info["Title"]
         
         # Check if the movie has valid IMDb rating, genre, and poster
         if movie_info['imdbRating'] != 'N/A' and movie_info['Genre'] != 'N/A' and movie_info['Poster'] != 'N/A':
@@ -222,6 +225,9 @@ def predict():
 @login_required
 def history():
     recommendations = Recommendation.query.filter_by(user_id=current_user.id).all()
+    if not recommendations:
+        # Passing a flag to indicate no recommendations found
+        return render_template('history.html', recommendations=None)
     return render_template('history.html', recommendations=recommendations)
 
 def get_movie_info(title):

@@ -43,8 +43,3 @@ class Filter:
     
     def resultsTop10(self, genre):
         return self.resultsgenre(genre)[:10]
-
-
-filter = Filter()
-print(filter.resultsTop10rate(2))
-print(filter.resultsTop10rate(4))
