@@ -18,7 +18,6 @@ def search_movie_tmdb(movie_name, API_KEY, year=None):
     
     search_data = response.json()
     if not search_data['results']:
-        print("No movie found")
         return None
 
     # Return the movie ID of the first result
@@ -32,7 +31,6 @@ def get_streaming_providers(movie_id, API_KEY):
     response = requests.get(url, params=params)
     
     if response.status_code != 200:
-        print("Failed to fetch providers data")
         return None
 
     providers_data = response.json()
@@ -55,7 +53,6 @@ def get_movie_reviews(movie_id, API_KEY):
     response = requests.get(url, params=params)
     
     if response.status_code != 200:
-        print("Reviews: Failed to fetch data")
         return None
     
     reviews = response.json().get('results', [])
@@ -70,5 +67,4 @@ def get_movie_reviews(movie_id, API_KEY):
             show.append(each)
         else:
             break
-    print(length)
     return show 
