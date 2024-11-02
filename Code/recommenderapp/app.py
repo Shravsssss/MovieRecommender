@@ -26,8 +26,8 @@ import re
 import pandas as pd
 
 sys.path.append("../../")
-from .filter import Filter
-from .search import Search
+from filter import Filter
+from search import Search
 from Code.prediction_scripts.item_based import recommendForNewUser
 
 app = Flask(__name__)
