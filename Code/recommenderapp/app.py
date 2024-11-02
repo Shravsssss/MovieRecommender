@@ -1,3 +1,15 @@
+# StreamR
+
+# Version: 1.0.0
+# Date Released: 2024-11-01
+# Authors: Sravya Yepuri, Chirag Hegde, Melika Ahmadi Ranjbar
+
+# Licensed under the MIT License.
+# You may obtain a copy of the License at
+
+#     https://opensource.org/licenses/MIT
+
+
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
