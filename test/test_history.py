@@ -3,6 +3,7 @@ from Code.recommenderapp.app import app, db, User, Recommendation
 from flask_login import login_user
 from datetime import datetime
 
+
 class HistoryTests(unittest.TestCase):
     """Test suite for the history functionality in RecommenderApp."""
 
@@ -76,6 +77,7 @@ class HistoryTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Inception', response.data)
         self.assertIn(b'The Matrix', response.data)
+
 
 if __name__ == "__main__":
     unittest.main()

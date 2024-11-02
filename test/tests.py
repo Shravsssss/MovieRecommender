@@ -1,9 +1,9 @@
+from Code.prediction_scripts.item_based import recommendForNewUser
 import unittest
 import warnings
 import sys
 
 sys.path.append("../")
-from Code.prediction_scripts.item_based import recommendForNewUser
 
 warnings.filterwarnings("ignore")
 
@@ -49,7 +49,8 @@ class Tests(unittest.TestCase):
             {"title": "Iron Man (2008)", "rating": 5.0},
         ]
         recommendations = recommendForNewUser(ts)
-        self.assertTrue(("Avengers: Infinity War - Part I (2018)" in recommendations))
+        self.assertTrue(
+            ("Avengers: Infinity War - Part I (2018)" in recommendations))
 
     def testRoboCop(self):
         ts = [
@@ -100,7 +101,8 @@ class Tests(unittest.TestCase):
             {"title": "Puppet Master (1989)", "rating": 5.0},
         ]
         recommendations = recommendForNewUser(ts)
-        self.assertTrue(("Black Mirror: White Christmas (2014)" in recommendations))
+        self.assertTrue(
+            ("Black Mirror: White Christmas (2014)" in recommendations))
 
     def testHorrorComedy(self):
         ts = [
@@ -134,36 +136,54 @@ class Tests(unittest.TestCase):
     def testEmptyInput(self):
         ts = []
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Empty input should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Empty input should result in empty recommendations")
 
     def testInvalidRating(self):
         ts = [{"title": "Toy Story (1995)", "rating": 6.0}]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Invalid rating should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Invalid rating should result in empty recommendations")
 
     def testTooLongMovieTitle(self):
-        ts = [{"title": "T"*1000, "rating": 5.0}]
+        ts = [{"title": "T" * 1000, "rating": 5.0}]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Too long movie titles should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Too long movie titles should result in empty recommendations")
 
     def testInvalidTitle(self):
         ts = [
             {"title": "Invalid Movie", "rating": 5.0},  # Incorrect key "title"
         ]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Invalid input should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Invalid input should result in empty recommendations")
 
     def testGibberishTitles(self):
         ts = [{"title": "@#$%^", "rating": 5.0}]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Movies with gibberish titles should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Movies with gibberish titles should result in empty recommendations")
 
     def testNegativeRatings(self):
         ts = [
             {"title": "Toy Story (1995)", "rating": -2.0},  # Negative rating
         ]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Negative ratings should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Negative ratings should result in empty recommendations")
 
     def testMixValidInvalidRatings(self):
         ts = [
@@ -171,7 +191,10 @@ class Tests(unittest.TestCase):
             {"title": "Inception (2010)", "rating": 6.0},  # Invalid rating
         ]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Mix of valid and invalid ratings should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Mix of valid and invalid ratings should result in empty recommendations")
 
     def testTitlesWithLeadingTrailingSpaces(self):
         ts = [
@@ -185,7 +208,10 @@ class Tests(unittest.TestCase):
             {"title": "Inception (2010)", "rating": None},
         ]
         recommendations = recommendForNewUser(ts)
-        self.assertEqual(recommendations, [], "Empty rating value should result in empty recommendations")
+        self.assertEqual(
+            recommendations,
+            [],
+            "Empty rating value should result in empty recommendations")
 
 
 if __name__ == "__main__":

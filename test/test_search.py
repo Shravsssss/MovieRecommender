@@ -1,10 +1,10 @@
+from Code.recommenderapp.search import Search
 import unittest
 import warnings
 import sys
 import os
 
 sys.path.append("../")
-from Code.recommenderapp.search import Search
 
 warnings.filterwarnings("ignore")
 
@@ -73,43 +73,56 @@ class Tests(unittest.TestCase):
         search_word = "!@#$%^&*()"
         search = Search()
         filtered_dict = search.resultsTop10(search_word)
-        expected_resp = []  
-        self.assertTrue(filtered_dict == expected_resp, "Search with special characters should result in an empty list or a specific behavior")
+        expected_resp = []
+        self.assertTrue(
+            filtered_dict == expected_resp,
+            "Search with special characters should result in an empty list or a specific behavior")
 
     def testSearchLongString(self):
         search_word = "a" * 1000
         search = Search()
         filtered_dict = search.resultsTop10(search_word)
-        expected_resp = []  
-        self.assertTrue(filtered_dict == expected_resp, "Long search terms should result in an empty list or a specific behavior")
+        expected_resp = []
+        self.assertTrue(
+            filtered_dict == expected_resp,
+            "Long search terms should result in an empty list or a specific behavior")
 
     def testSearchTermNotFound(self):
         search_word = "nonexistentterm"
         search = Search()
         filtered_dict = search.resultsTop10(search_word)
-        expected_resp = []  
-        self.assertTrue(filtered_dict == expected_resp, "Search term not found should result in an empty list or a specific behavior")
+        expected_resp = []
+        self.assertTrue(
+            filtered_dict == expected_resp,
+            "Search term not found should result in an empty list or a specific behavior")
 
     def testSearchWhitespace(self):
         search_word = "  whitespace  "
         search = Search()
         filtered_dict = search.resultsTop10(search_word)
         expected_resp = []
-        self.assertTrue(filtered_dict == expected_resp, "Search term with leading and trailing whitespaces should result in an empty list of results")
+        self.assertTrue(
+            filtered_dict == expected_resp,
+            "Search term with leading and trailing whitespaces should result in an empty list of results")
 
     def testSearchHTMLJavaScriptTags(self):
         search_word = "<script>alert('Hello');</script>"
         search = Search()
         filtered_dict = search.resultsTop10(search_word)
         expected_resp = []
-        self.assertTrue(filtered_dict == expected_resp, "Search term with HTML/JavaScript tags should result in an empty list of results")
+        self.assertTrue(
+            filtered_dict == expected_resp,
+            "Search term with HTML/JavaScript tags should result in an empty list of results")
 
     def testSearchUnicodeCharacters(self):
         search_word = "😊"
         search = Search()
         filtered_dict = search.resultsTop10(search_word)
         expected_resp = []
-        self.assertTrue(filtered_dict == expected_resp, "Search term with Unicode characters should result in an empty list of results")
+        self.assertTrue(
+            filtered_dict == expected_resp,
+            "Search term with Unicode characters should result in an empty list of results")
+
 
 if __name__ == "__main__":
     unittest.main()

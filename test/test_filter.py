@@ -2,14 +2,16 @@ import unittest
 from unittest.mock import patch
 from Code.recommenderapp.tmdb_utils import search_movie_tmdb, get_streaming_providers, get_movie_reviews
 
+
 class TestTMDBFunctions(unittest.TestCase):
     """
     Test suite for TMDB API-related functions in the RecommenderApp.
     Includes tests for searching movies by name and year, retrieving
     streaming providers, and fetching reviews for a movie.
     """
-    
-    TMDB_API_KEY = "9f385440fe752884a4f5b8ea5b6839dd"  # Mock API key for testing purposes
+
+    # Mock API key for testing purposes
+    TMDB_API_KEY = "9f385440fe752884a4f5b8ea5b6839dd"
 
     # Test cases for `search_movie_tmdb`
 
@@ -22,9 +24,12 @@ class TestTMDBFunctions(unittest.TestCase):
         # Mock a successful response with a valid movie ID
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"results": [{"id": 12345}]}
-        
+
         movie_id = search_movie_tmdb("Inception", self.TMDB_API_KEY)
-        self.assertEqual(movie_id, 12345, "Expected valid movie ID for 'Inception'")
+        self.assertEqual(
+            movie_id,
+            12345,
+            "Expected valid movie ID for 'Inception'")
 
     @patch('requests.get')
     def test_search_movie_tmdb_invalid_name(self, mock_get):
@@ -35,7 +40,7 @@ class TestTMDBFunctions(unittest.TestCase):
         # Mock a successful response with no results
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"results": []}
-        
+
         movie_id = search_movie_tmdb("xxxxxxxxxxxxxx", self.TMDB_API_KEY)
         self.assertIsNone(movie_id, "Expected None for nonexistent movie name")
 
@@ -48,9 +53,11 @@ class TestTMDBFunctions(unittest.TestCase):
         # Mock a response with no results due to invalid year
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"results": []}
-        
+
         movie_id = search_movie_tmdb("Inception", self.TMDB_API_KEY, year=1800)
-        self.assertIsNone(movie_id, "Expected None for valid movie name but invalid year")
+        self.assertIsNone(
+            movie_id,
+            "Expected None for valid movie name but invalid year")
 
     @patch('requests.get')
     def test_search_movie_tmdb_api_failure(self, mock_get):
@@ -60,7 +67,7 @@ class TestTMDBFunctions(unittest.TestCase):
         """
         # Mock an API failure response
         mock_get.return_value.status_code = 500
-        
+
         movie_id = search_movie_tmdb("Inception", self.TMDB_API_KEY)
         self.assertIsNone(movie_id, "Expected None due to API failure")
 
@@ -83,10 +90,14 @@ class TestTMDBFunctions(unittest.TestCase):
                 }
             }
         }
-        
+
         providers = get_streaming_providers(12345, self.TMDB_API_KEY)
-        expected = [("Amazon Prime", "https://image.tmdb.org/t/p/w500/logo.png")]
-        self.assertEqual(providers, expected, "Expected valid streaming providers list for US")
+        expected = [
+            ("Amazon Prime", "https://image.tmdb.org/t/p/w500/logo.png")]
+        self.assertEqual(
+            providers,
+            expected,
+            "Expected valid streaming providers list for US")
 
     @patch('requests.get')
     def test_get_streaming_providers_no_country(self, mock_get):
@@ -97,9 +108,12 @@ class TestTMDBFunctions(unittest.TestCase):
         # Mock a successful response with no providers in US
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"results": {}}
-        
+
         providers = get_streaming_providers(12345, self.TMDB_API_KEY)
-        self.assertEqual(providers, [], "Expected empty list for movie with no streaming providers")
+        self.assertEqual(
+            providers,
+            [],
+            "Expected empty list for movie with no streaming providers")
 
     @patch('requests.get')
     def test_get_streaming_providers_invalid_id(self, mock_get):
@@ -109,7 +123,7 @@ class TestTMDBFunctions(unittest.TestCase):
         """
         # Mock a 404 response for an invalid movie ID
         mock_get.return_value.status_code = 404
-        
+
         providers = get_streaming_providers(99999, self.TMDB_API_KEY)
         self.assertIsNone(providers, "Expected None for invalid movie ID")
 
@@ -121,7 +135,7 @@ class TestTMDBFunctions(unittest.TestCase):
         """
         # Mock an API failure response
         mock_get.return_value.status_code = 500
-        
+
         providers = get_streaming_providers(12345, self.TMDB_API_KEY)
         self.assertIsNone(providers, "Expected None due to API failure")
 
@@ -141,7 +155,7 @@ class TestTMDBFunctions(unittest.TestCase):
                 {"author": "User2", "content": "Loved it!"}
             ]
         }
-        
+
         reviews = get_movie_reviews(12345, self.TMDB_API_KEY)
         self.assertEqual(len(reviews), 2, "Expected 2 reviews in the results")
 
@@ -160,10 +174,13 @@ class TestTMDBFunctions(unittest.TestCase):
                 {"author": "User2", "content": long_review}
             ]
         }
-        
+
         reviews = get_movie_reviews(12345, self.TMDB_API_KEY)
         total_length = sum(len(review['content']) for review in reviews)
-        self.assertLessEqual(total_length, 1000, "Expected total review content to be <= 1000 characters")
+        self.assertLessEqual(
+            total_length,
+            1000,
+            "Expected total review content to be <= 1000 characters")
 
     @patch('requests.get')
     def test_get_movie_reviews_no_reviews(self, mock_get):
@@ -174,9 +191,12 @@ class TestTMDBFunctions(unittest.TestCase):
         # Mock a successful response with no reviews
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"results": []}
-        
+
         reviews = get_movie_reviews(12345, self.TMDB_API_KEY)
-        self.assertEqual(reviews, [], "Expected empty list for movie with no reviews")
+        self.assertEqual(
+            reviews,
+            [],
+            "Expected empty list for movie with no reviews")
 
     @patch('requests.get')
     def test_get_movie_reviews_api_failure(self, mock_get):
@@ -186,9 +206,10 @@ class TestTMDBFunctions(unittest.TestCase):
         """
         # Mock an API failure response
         mock_get.return_value.status_code = 500
-        
+
         reviews = get_movie_reviews(12345, self.TMDB_API_KEY)
         self.assertIsNone(reviews, "Expected None due to API failure")
+
 
 if __name__ == "__main__":
     unittest.main()
