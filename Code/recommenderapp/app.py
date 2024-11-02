@@ -106,16 +106,17 @@ def edit_profile():
 @login_required
 def change_password():
     new_password = request.form.get("new_password")
-    
-    # Check if the new password is empty and provide feedback without raising an exception
+
+    # Check if the new password is empty and provide feedback without raising
+    # an exception
     if not new_password:
         flash("Password cannot be empty!", "danger")
         return redirect(url_for('profile'))
-    
+
     # Set the new password and save to the database
     current_user.set_password(new_password)
     db.session.commit()
-    
+
     flash("Password changed successfully!", "success")
     return redirect(url_for('profile'))
 
@@ -215,7 +216,7 @@ def predict():
         if not movie_info:
             continue  # If no movie information, skip to the next
         movie = movie_info["Title"]
-        
+
         # Check if the movie has valid IMDb rating, genre, and poster
         if movie_info['imdbRating'] != 'N/A' and movie_info['Genre'] != 'N/A' and movie_info['Poster'] != 'N/A':
             movie_with_rating[movie + "-c"] = movie_info['Reviews']
@@ -246,7 +247,8 @@ def predict():
 @app.route("/history")
 @login_required
 def history():
-    recommendations = Recommendation.query.filter_by(user_id=current_user.id).all()
+    recommendations = Recommendation.query.filter_by(
+        user_id=current_user.id).all()
     if not recommendations:
         # Passing a flag to indicate no recommendations found
         return render_template('history.html', recommendations=None)
