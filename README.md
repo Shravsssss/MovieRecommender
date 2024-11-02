@@ -9,9 +9,11 @@ Your movie night assistant powered by collaborative filtering recommendations!
 [![GitHub issues-closed](https://img.shields.io/github/issues-closed-raw/Shravsssss/MovieRecommender)](https://github.com/Shravsssss/MovieRecommender/issues?q=is%3Aissue+is%3Aclosed) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT) 
-[![Code Coverage](https://github.com/Shravsssss/MovieRecommender/actions/workflows/codecov.yml/badge.svg)](https://github.com/Shravsssss/MovieRecommender/actions/workflows/codecov.yml) 
 [![codecov](https://codecov.io/gh/Shravsssss/MovieRecommender/graph/badge.svg?token=Z8QJQ9BE6J)](https://codecov.io/gh/Shravsssss/MovieRecommender)
-[![GitHub release](https://img.shields.io/github/release/git-ankit/MovieRecommender.svg)](https://github.com/Shravsssss/MovieRecommender/releases) [![black](https://img.shields.io/badge/StyleChecker-black-purple.svg)](https://pypi.org/project/black/) 
+[![GitHub release](https://img.shields.io/github/release/git-ankit/MovieRecommender.svg)](https://github.com/Shravsssss/MovieRecommender/releases) 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14027335.svg)](https://doi.org/10.5281/zenodo.14027335)
+[![black](https://img.shields.io/badge/StyleChecker-black-purple.svg)](https://pypi.org/project/black/) 
+
 
 ## Skip the endless scroll, StreamR has your next movie pick ready!
 
@@ -59,7 +61,7 @@ Get a sneak peek of StreamR in action! Click the link to watch the demo.
 
 [Watch the animated video here](https://github.com/user-attachments/assets/0363fddc-0874-42bb-8e1b-e38a962394fa)
 
-[Watch the demo video here]()
+[Watch the demo video here](https://youtu.be/sNsCvfMRBTI)
 
 ## How StreamR Works 📱
 
