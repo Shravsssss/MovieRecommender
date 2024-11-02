@@ -131,3 +131,17 @@ We’d love to hear from you! Please [open an issue](https://github.com/Shravsss
 StreamR is open-source under the MIT License.
 - We chose the MIT license to promote freedom and flexibility for you to adapt StreamR to your needs.
 - Enjoy, share, and contribute back to the community!
+
+## Copyright
+You can use below information for copyright.
+
+```bash
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - names: Sravya Yepuri, Chirag Hegde, Melika Ahmadi Ranjbar
+title: "MovieRecommender"
+version: "1.0.0"
+date-released: "2024-11-01"
+url: "https://github.com/Shravsssss/MovieRecommender"
+```
