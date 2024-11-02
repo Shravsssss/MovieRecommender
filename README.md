@@ -11,7 +11,10 @@ Your movie night assistant powered by collaborative filtering recommendations!
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT) 
 [![Code Coverage](https://github.com/Shravsssss/MovieRecommender/actions/workflows/codecov.yml/badge.svg)](https://github.com/Shravsssss/MovieRecommender/actions/workflows/codecov.yml) 
 [![codecov](https://codecov.io/gh/Shravsssss/MovieRecommender/graph/badge.svg?token=Z8QJQ9BE6J)](https://codecov.io/gh/Shravsssss/MovieRecommender)
-[![GitHub release](https://img.shields.io/github/release/git-ankit/MovieRecommender.svg)](https://github.com/Shravsssss/MovieRecommender/releases) [![black](https://img.shields.io/badge/StyleChecker-black-purple.svg)](https://pypi.org/project/black/) 
+[![GitHub release](https://img.shields.io/github/release/git-ankit/MovieRecommender.svg)](https://github.com/Shravsssss/MovieRecommender/releases) 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14027335.svg)](https://doi.org/10.5281/zenodo.14027335)
+[![black](https://img.shields.io/badge/StyleChecker-black-purple.svg)](https://pypi.org/project/black/) 
+
 
 ## Skip the endless scroll, StreamR has your next movie pick ready!
 
