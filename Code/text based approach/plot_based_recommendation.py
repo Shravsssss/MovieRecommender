@@ -11,7 +11,8 @@ def get_data(movie_length):
 
 
 def compute_tfidfmatrix(metadata):
-    # Define a TF-IDF Vectorizer Object. Remove all english stop words such as 'the', 'a'
+    # Define a TF-IDF Vectorizer Object. Remove all english stop words such as
+    # 'the', 'a'
     tfidf = TfidfVectorizer(stop_words="english")
 
     # Replace NaN with an empty string
@@ -60,11 +61,14 @@ if __name__ == "__main__":
     data = np.load("cosine_similarity_5k.npz", allow_pickle=True)
     cosine_similarity = data["matrix"]
 
-    indices = pd.Series(metadata.index, index=metadata["title"]).drop_duplicates()
+    indices = pd.Series(
+        metadata.index,
+        index=metadata["title"]).drop_duplicates()
     play = True
-    while play != False:
+    while play:
         movie = input("Name of movie from movie list: ")
-        recommendations = get_recommendations(movie, indices, cosine_similarity)
+        recommendations = get_recommendations(
+            movie, indices, cosine_similarity)
         if recommendations is None:
             print("Given movie not in database, try again")
             continue

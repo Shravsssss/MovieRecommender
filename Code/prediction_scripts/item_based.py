@@ -47,22 +47,36 @@ def recommendForNewUser(user_rating):
     userMovieID = movies[movies["title"].isin(user["title"])]
     userRatings = pd.merge(userMovieID, user)
 
-    # Handle edge case for empty userRatings after filtering
-    if userRatings.empty:
-        return []
+    # Check for too long movie titles
+    max_title_length = 255  # Set your desired maximum title length
+    if any(len(title) > max_title_length for title in user["title"]):
+        return []  # Return an empty list if any title is too long
 
-    # Genre processing for movie profiles
-    genre_columns = movies["genres"].str.get_dummies("|")
-    moviesGenreFilled = pd.concat([movies, genre_columns], axis=1).fillna(0)
+     # Ensure that the "title" key exists in each rating dictionary
+    user = user[user["title"].isin(
+        movies["title"])] if "title" in user.columns else pd.DataFrame()
+    if user.empty:
+        return []  # Return an empty list if no valid movie titles are found in the input
 
-    # Calculate user profile based on genre preferences
-    userGenre = moviesGenreFilled[moviesGenreFilled.movieId.isin(userRatings.movieId)]
+    moviesGenreFilled = movies.copy(deep=True)
+    copyOfMovies = movies.copy(deep=True)
+    for index, row in copyOfMovies.iterrows():
+        copyOfMovies.at[index, "genres"] = row["genres"].split("|")
+    for index, row in copyOfMovies.iterrows():
+        for genre in row["genres"]:
+            moviesGenreFilled.at[index, genre] = 1
+    moviesGenreFilled = moviesGenreFilled.fillna(0)
+
+    userGenre = moviesGenreFilled[moviesGenreFilled.movieId.isin(
+        userRatings.movieId)]
     userGenre.drop(["movieId", "title", "genres"], axis=1, inplace=True)
     userProfile = userGenre.T.dot(userRatings.rating.to_numpy())
     
     # Normalize genres in movies and calculate recommendations
     moviesGenreFilled.set_index(moviesGenreFilled.movieId)
-    moviesGenreFilled.drop(["movieId", "title", "genres"], axis=1, inplace=True)
+    moviesGenreFilled.drop(
+        ["movieId", "title", "genres"], axis=1, inplace=True)
+
     recommendations = (moviesGenreFilled.dot(userProfile)) / userProfile.sum()
     
     # Join recommendations with movies and sort
@@ -70,8 +84,10 @@ def recommendForNewUser(user_rating):
     joinMoviesAndRecommendations["recommended"] = recommendations
     joinMoviesAndRecommendations.sort_values(by="recommended", ascending=False, inplace=True)
 
-    # Remove movies already rated by the user
+    # Remove the movies that the user has already rated (training data)
+    # Movies in training data
     rated_movie_titles = userRatings["title"].tolist()
-    joinMoviesAndRecommendations = joinMoviesAndRecommendations[~joinMoviesAndRecommendations["title"].isin(rated_movie_titles)]
+    joinMoviesAndRecommendations = joinMoviesAndRecommendations[~joinMoviesAndRecommendations["title"].isin(
+        rated_movie_titles)]
 
     return [x for x in joinMoviesAndRecommendations["title"]][:201]
