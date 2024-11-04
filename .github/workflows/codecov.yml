@@ -54,9 +54,13 @@ jobs:
         with:
           python-version: 3.x  # Specify your Python version here
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install setuptools wheel  # Install setuptools and wheel
+
+      - name: Install dependencies
+        run: |
           pip install -r requirements.txt
           pip install pytest pytest-cov  # Install pytest and coverage tools
 
